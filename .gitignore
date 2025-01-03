@@ -1,0 +1,59 @@
+# Visual Studio and general .NET files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+.DS_Store
+
+# Build output directories
+bin/
+obj/
+
+# User-specific files
+*.csproj.user
+*.userprefs
+*.rsuser
+*.sln.ide
+
+# Configuration files
+*.cache
+*.log
+
+# MAUI platform-specific output
+.platforms/
+
+# Mac/iOS artifacts
+*.app/
+*.ipa
+*.dmg
+*.xcuserstate
+*.xcworkspace/
+*.xcodeproj/
+*.xcsettings
+
+# Android artifacts
+*.apk
+*.ap_
+
+# Blazor and Razor files
+**/bin/
+**/obj/
+*.razor.g.*
+*.razor.gen.cs
+
+# Node and npm (if using for web assets)
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Secrets (add your secrets file here if used)
+secrets.json
+*.env
+.env.*
+
+# IDE-specific directories
+.vscode/
+.idea/
