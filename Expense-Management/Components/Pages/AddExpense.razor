@@ -1,0 +1,104 @@
+﻿@page "/addExpense"
+
+<div class="container py-5">
+    <!-- Header -->
+    <div class="mb-5">
+        <h1 class="text-center">Add Expense</h1>
+    </div>
+
+    <!-- Expense Form -->
+    <div class="card mx-auto shadow-lg">
+        <div class="card-body">
+            <form @onsubmit="AddExpenseHandler">
+                <!-- Item -->
+                <div class="mb-3">
+                    <label for="item" class="form-label">Item</label>
+                    <input type="text" id="item" placeholder="Enter item" @bind="ExpenseItem"
+                           required
+                           class="form-control" />
+                </div>
+
+                <!-- Cost of Item -->
+                <div class="mb-3">
+                    <label for="expense-amount" class="form-label">Amount</label>
+                    <input type="number" id="expense-amount" @bind="ExpenseCost"
+                           required
+                           class="form-control" />
+                </div>
+
+                <!-- Date -->
+                <div class="mb-3">
+                    <label for="expense-date" class="form-label">Date</label>
+                    <input type="date" id="expense-date" @bind="ExpenseDate"
+                           required
+                           class="form-control" />
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Add Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DateTime? ExpenseDate { get; set; }
+    private string? ExpenseItem { get; set; }
+    private decimal? ExpenseCost { get; set; }
+
+    [Inject]
+    private NavigationManager NavManager { get; set; } = default!;
+
+    private void AddExpenseHandler()
+    {
+        if (ExpenseDate != null && !string.IsNullOrEmpty(ExpenseItem) && ExpenseCost != null)
+        {
+            SaveExpenseData();
+            NavManager.NavigateTo("/home");
+        }
+    }
+
+    private void SaveExpenseData()
+    {
+        try
+        {
+            var expense = new Expense
+                {
+                    ExpenseDate = ExpenseDate.Value,
+                    ExpenseItem = ExpenseItem!,
+                    ExpenseCost = ExpenseCost.Value
+                };
+
+            // Path to save the JSON file
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Expense.json");
+
+            List<Expense> expenses = new();
+            if (File.Exists(filePath))
+            {
+                var existingData = File.ReadAllText(filePath);
+                expenses = System.Text.Json.JsonSerializer.Deserialize<List<Expense>>(existingData) ?? new List<Expense>();
+            }
+
+            expenses.Add(expense);
+
+            // Serialize updated data
+            string jsonData = System.Text.Json.JsonSerializer.Serialize(expenses, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+            // Save to file
+            File.WriteAllText(filePath, jsonData);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving expense data: {ex.Message}");
+        }
+    }
+
+    private class Expense
+    {
+        public DateTime ExpenseDate { get; set; }
+        public string ExpenseItem { get; set; } = string.Empty;
+        public decimal ExpenseCost { get; set; }
+    }
+}

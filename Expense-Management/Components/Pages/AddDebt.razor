@@ -1,0 +1,108 @@
+﻿@page "/addDebt"
+
+<div class="p-4">
+    <div class="mb-4">
+        <h1 class="text-center">Add Debt</h1>
+    </div>
+
+    <!-- Debt Form -->
+    <div class="card mx-auto shadow-lg">
+        <div class="card-body">
+            <form @onsubmit="HandleSubmit">
+                <div class="mb-3">
+                    <label for="debt-title" class="form-label">Title</label>
+                    <input type="text" id="debt-title" @bind="DebtTitle"
+                           required
+                           class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="debt-amount" class="form-label">Amount</label>
+                    <input type="number" id="debt-amount" @bind="DebtAmount"
+                           required
+                           class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="debt-date" class="form-label">Date</label>
+                    <input type="date" id="debt-date" @bind="DebtDate"
+                           required
+                           class="form-control" />
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Add Debt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string DebtTitle { get; set; } = string.Empty;
+    private decimal DebtAmount { get; set; }
+    private DateTime DebtDate { get; set; } = DateTime.Today;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    private void HandleSubmit()
+    {
+        if (!string.IsNullOrWhiteSpace(DebtTitle) && DebtAmount > 0)
+        {
+            SaveDebtData();
+
+            // Navigate to home page
+            NavigationManager.NavigateTo("/home");
+
+            // Reset form fields
+            DebtTitle = string.Empty;
+            DebtAmount = 0;
+        }
+    }
+
+    private void SaveDebtData()
+    {
+        try
+        {
+            // Path to save the JSON file
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Debt.json");
+
+            // Create a new debt object
+            var newDebt = new Debt
+                {
+                    DebtTitle = DebtTitle,
+                    DebtAmount = DebtAmount,
+                    DebtDate = DebtDate
+                };
+
+            // Read existing debts from the file if it exists
+            List<Debt> debts = new();
+            if (File.Exists(filePath))
+            {
+                var existingData = File.ReadAllText(filePath);
+                debts = System.Text.Json.JsonSerializer.Deserialize<List<Debt>>(existingData) ?? new List<Debt>();
+            }
+
+            // Add the new debt to the list
+            debts.Add(newDebt);
+
+            // Serialize updated data
+            string jsonData = System.Text.Json.JsonSerializer.Serialize(debts, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+            // Save to file
+            File.WriteAllText(filePath, jsonData);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving debt data: {ex.Message}");
+        }
+    }
+
+    private class Debt
+    {
+        public string DebtTitle { get; set; } = string.Empty;
+        public decimal DebtAmount { get; set; }
+        public DateTime DebtDate { get; set; }
+    }
+}

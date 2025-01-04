@@ -1,5 +1,231 @@
-﻿@page "/"
+﻿@page "/home"
 
-<h1>Hello, world!</h1>
+<div class="container-fluid py-4">
+    <!-- Summary Cards -->
+    <div class="row mb-4 text-center">
+        <div class="col-md-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Total Transactions</h5>
+                    <p class="h4 font-weight-bold">@TotalTransactions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Cash Inflow</h5>
+                    <p class="h4 font-weight-bold">@CashInflow.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Cash Outflow</h5>
+                    <p class="h4 font-weight-bold">@CashOutflow.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Debt</h5>
+                    <p class="h4 font-weight-bold">@TotalDebt.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-Welcome to your new app.
+    <!-- Transaction Report -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Transaction Report</h4>
+        </div>
+        <div class="card-body">
+            <!-- Search and Filter Section -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Search by title" @bind="SearchText" />
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" @bind="SelectedType">
+                        <option value="">All Types</option>
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
+                        <option value="Debt">Debt</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex">
+                        <input type="date" class="form-control me-2" @bind="StartDate" />
+                        <input type="date" class="form-control" @bind="EndDate" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table-striped table-hover table">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (FilteredTransactions.Any())
+                        {
+                            @foreach (var transaction in FilteredTransactions)
+                            {
+                                <tr>
+                                    <td>@transaction.Title</td>
+                                    <td>@transaction.Amount.ToString("C")</td>
+                                    <td>@transaction.Type</td>
+                                    <td>@transaction.Date.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center">No transactions found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Transaction> Transactions { get; set; } = new();
+    private List<Transaction> FilteredTransactions => Transactions
+        .Where(t => string.IsNullOrWhiteSpace(SearchText) || t.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+        .Where(t => string.IsNullOrWhiteSpace(SelectedType) || t.Type == SelectedType)
+        .Where(t => !StartDate.HasValue || t.Date >= StartDate.Value)
+        .Where(t => !EndDate.HasValue || t.Date <= EndDate.Value)
+        .OrderBy(t => t.Date)
+        .ToList();
+
+    private decimal CashInflow { get; set; }
+    private decimal CashOutflow { get; set; }
+    private decimal TotalDebt { get; set; }
+    private int TotalTransactions => Transactions.Count;
+    private string SearchText { get; set; } = string.Empty;
+    private string SelectedType { get; set; } = string.Empty;
+    private DateTime? StartDate { get; set; }
+    private DateTime? EndDate { get; set; }
+
+    protected override void OnInitialized()
+    {
+        LoadTransactionData();
+        CalculateSummary();
+    }
+
+    private void LoadTransactionData()
+    {
+        try
+        {
+            string expenseFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Expense.json");
+            string incomeFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Income.json");
+            string debtFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Debt.json");
+
+            if (File.Exists(expenseFilePath))
+            {
+                var expenseData = File.ReadAllText(expenseFilePath);
+                var expenses = System.Text.Json.JsonSerializer.Deserialize<List<Expense>>(expenseData) ?? new List<Expense>();
+
+                foreach (var expense in expenses)
+                {
+                    Transactions.Add(new Transaction
+                        {
+                            Title = expense.ExpenseItem ?? "Unknown",
+                            Amount = expense.ExpenseCost ?? 0,
+                            Type = "Expense",
+                            Date = expense.ExpenseDate ?? DateTime.Today
+                        });
+                }
+            }
+
+            if (File.Exists(incomeFilePath))
+            {
+                var incomeData = File.ReadAllText(incomeFilePath);
+                var incomes = System.Text.Json.JsonSerializer.Deserialize<List<Income>>(incomeData) ?? new List<Income>();
+
+                foreach (var income in incomes)
+                {
+                    Transactions.Add(new Transaction
+                        {
+                            Title = income.IncomeTitle,
+                            Amount = income.IncomeAmount,
+                            Type = "Income",
+                            Date = income.IncomeDate
+                        });
+                }
+            }
+
+            if (File.Exists(debtFilePath))
+            {
+                var debtData = File.ReadAllText(debtFilePath);
+                var debts = System.Text.Json.JsonSerializer.Deserialize<List<Debt>>(debtData) ?? new List<Debt>();
+
+                foreach (var debt in debts)
+                {
+                    Transactions.Add(new Transaction
+                        {
+                            Title = debt.DebtTitle,
+                            Amount = debt.DebtAmount,
+                            Type = "Debt",
+                            Date = debt.DebtDate
+                        });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading transaction data: {ex.Message}");
+        }
+    }
+
+    private void CalculateSummary()
+    {
+        CashInflow = Transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+        CashOutflow = Transactions
+            .Where(t => t.Type == "Expense" || t.Type == "Debt")
+            .Sum(t => Math.Abs(t.Amount));
+        TotalDebt = Transactions.Where(t => t.Type == "Debt").Sum(t => t.Amount);
+    }
+
+    private class Transaction
+    {
+        public string Title { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+    }
+
+    private class Expense
+    {
+        public DateTime? ExpenseDate { get; set; }
+        public string? ExpenseItem { get; set; }
+        public decimal? ExpenseCost { get; set; }
+    }
+
+    private class Income
+    {
+        public string IncomeTitle { get; set; } = string.Empty;
+        public decimal IncomeAmount { get; set; }
+        public DateTime IncomeDate { get; set; }
+    }
+
+    private class Debt
+    {
+        public string DebtTitle { get; set; } = string.Empty;
+        public decimal DebtAmount { get; set; }
+        public DateTime DebtDate { get; set; }
+    }
+}
