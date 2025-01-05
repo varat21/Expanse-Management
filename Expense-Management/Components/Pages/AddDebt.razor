@@ -5,7 +5,6 @@
         <h1 class="text-center">Add Debt</h1>
     </div>
 
-    <!-- Debt Form -->
     <div class="card mx-auto shadow-lg">
         <div class="card-body">
             <form @onsubmit="HandleSubmit">
@@ -13,6 +12,7 @@
                     <label for="debt-title" class="form-label">Title</label>
                     <input type="text" id="debt-title" @bind="DebtTitle"
                            required
+                           placeholder="Enter title"
                            class="form-control" />
                 </div>
 
@@ -20,6 +20,8 @@
                     <label for="debt-amount" class="form-label">Amount</label>
                     <input type="number" id="debt-amount" @bind="DebtAmount"
                            required
+                            placeholder="Enter Amount"
+
                            class="form-control" />
                 </div>
 
@@ -27,7 +29,21 @@
                     <label for="debt-date" class="form-label">Date</label>
                     <input type="date" id="debt-date" @bind="DebtDate"
                            required
+                           placeholder="Enter date"
                            class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="debt-tags" class="form-label">Tags (Comma Separated)</label>
+                    <input type="text" id="debt-tags" @bind="DebtTags"
+                    
+                           class="form-control" placeholder="e.g., Loan, Personal" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="debt-note" class="form-label">Note</label>
+                    <textarea id="debt-note" @bind="DebtNote" class="form-control" rows="3"
+                              placeholder="Optional notes about the debt"></textarea>
                 </div>
 
                 <div class="d-flex justify-content-end">
@@ -42,6 +58,9 @@
     private string DebtTitle { get; set; } = string.Empty;
     private decimal DebtAmount { get; set; }
     private DateTime DebtDate { get; set; } = DateTime.Today;
+    private string DebtTags { get; set; } = string.Empty;  
+    private string DebtNote { get; set; } = string.Empty;
+    private string Status { get; set; } = "pending";
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -50,33 +69,40 @@
     {
         if (!string.IsNullOrWhiteSpace(DebtTitle) && DebtAmount > 0)
         {
-            SaveDebtData();
+            var tagsList = string.IsNullOrWhiteSpace(DebtTags)
+                ? new List<string>()
+                : DebtTags.Split(',').Select(tag => tag.Trim()).ToList();
 
-            // Navigate to home page
+            SaveDebtData(tagsList); 
+
             NavigationManager.NavigateTo("/home");
 
-            // Reset form fields
             DebtTitle = string.Empty;
             DebtAmount = 0;
+            DebtTags = string.Empty;
+            DebtNote = string.Empty;
+            Status = "Pending";
+
         }
     }
 
-    private void SaveDebtData()
+    private void SaveDebtData(List<string> tags)
     {
         try
         {
-            // Path to save the JSON file
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Debt.json");
-
-            // Create a new debt object
             var newDebt = new Debt
                 {
                     DebtTitle = DebtTitle,
                     DebtAmount = DebtAmount,
-                    DebtDate = DebtDate
+                    DebtDate = DebtDate,
+                    Tags = tags,  
+                    Note = DebtNote,
+                    Status = Status,
+
                 };
 
-            // Read existing debts from the file if it exists
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Debt.json");
+
             List<Debt> debts = new();
             if (File.Exists(filePath))
             {
@@ -84,13 +110,10 @@
                 debts = System.Text.Json.JsonSerializer.Deserialize<List<Debt>>(existingData) ?? new List<Debt>();
             }
 
-            // Add the new debt to the list
             debts.Add(newDebt);
 
-            // Serialize updated data
             string jsonData = System.Text.Json.JsonSerializer.Serialize(debts, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
 
-            // Save to file
             File.WriteAllText(filePath, jsonData);
         }
         catch (Exception ex)
@@ -104,5 +127,9 @@
         public string DebtTitle { get; set; } = string.Empty;
         public decimal DebtAmount { get; set; }
         public DateTime DebtDate { get; set; }
+        public List<string> Tags { get; set; } = new();  
+        public string Note { get; set; } = string.Empty;  
+        public string Status { get; set; } = "pending";
+
     }
 }

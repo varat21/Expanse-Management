@@ -1,11 +1,9 @@
 ﻿@page "/addIncome"
 <div class="container py-4">
-    <!-- Header -->
     <div class="w-75 mb-4">
         <h1 class="text-center">Add Income</h1>
     </div>
 
-    <!-- Income Form -->
     <div class="card shadow">
         <div class="card-body">
             <form @onsubmit="HandleSubmit">
@@ -14,6 +12,7 @@
                         Title
                     </label>
                     <input type="text" id="income-title" @bind="IncomeTitle"
+                    placeholder="Enter title"
                            class="form-control" required />
                 </div>
 
@@ -22,6 +21,7 @@
                         Amount
                     </label>
                     <input type="number" id="income-amount" @bind="IncomeAmount"
+                    placeholder="Add Amount"
                            class="form-control" required />
                 </div>
 
@@ -31,6 +31,22 @@
                     </label>
                     <input type="date" id="income-date" @bind="IncomeDate"
                            class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="income-tags" class="form-label">
+                        Tags (Comma Separated)
+                    </label>
+                    <input type="text" id="income-tags" @bind="IncomeTags"
+                           class="form-control" placeholder="e.g., Salary, Bonus" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="income-note" class="form-label">
+                        Note
+                    </label>
+                    <textarea id="income-note" @bind="IncomeNote" class="form-control" rows="3"
+                              placeholder="Optional notes about the income"></textarea>
                 </div>
 
                 <div class="d-flex justify-content-end">
@@ -47,28 +63,45 @@
     private string IncomeTitle { get; set; } = string.Empty;
     private decimal IncomeAmount { get; set; }
     private DateTime IncomeDate { get; set; } = DateTime.Today;
+    private string IncomeTags { get; set; } = string.Empty; // tags field
+    private string IncomeNote { get; set; } = string.Empty; // note field
     private List<Income> Incomes { get; set; } = new();
 
     [Inject]
     private NavigationManager NavManager { get; set; } = default!;
 
+    protected override void OnInitialized()
+    {
+        LoadIncomeData(); // load existing data on initialization
+    }
+
     private void HandleSubmit()
     {
         if (!string.IsNullOrWhiteSpace(IncomeTitle) && IncomeAmount > 0)
         {
+            // Parse tags into a list
+            var tagsList = string.IsNullOrWhiteSpace(IncomeTags)
+                ? new List<string>()
+                : IncomeTags.Split(',').Select(tag => tag.Trim()).ToList();
+
+            // Add the new income entry
             Incomes.Add(new Income
                 {
                     IncomeTitle = IncomeTitle,
                     IncomeAmount = IncomeAmount,
-                    IncomeDate = IncomeDate
+                    IncomeDate = IncomeDate,
+                    Tags = tagsList, // Store the tags
+                    Note = IncomeNote // Store the note
                 });
 
-            SaveIncomeData();
+            SaveIncomeData(); // Save updated list to file
             NavManager.NavigateTo("/home");
 
             // Reset form fields
             IncomeTitle = string.Empty;
             IncomeAmount = 0;
+            IncomeTags = string.Empty;
+            IncomeNote = string.Empty;
         }
     }
 
@@ -90,10 +123,33 @@
         }
     }
 
+    private void LoadIncomeData()
+    {
+        try
+        {
+            string filePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "Income.json"
+            );
+
+            if (File.Exists(filePath))
+            {
+                var data = File.ReadAllText(filePath);
+                Incomes = System.Text.Json.JsonSerializer.Deserialize<List<Income>>(data) ?? new List<Income>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading income data: {ex.Message}");
+        }
+    }
+
     private class Income
     {
         public string IncomeTitle { get; set; } = string.Empty;
         public decimal IncomeAmount { get; set; }
         public DateTime IncomeDate { get; set; }
+        public List<string> Tags { get; set; } = new(); // tags field
+        public string Note { get; set; } = string.Empty; // note field
     }
 }

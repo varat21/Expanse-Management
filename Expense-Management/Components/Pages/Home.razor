@@ -37,6 +37,37 @@
         </div>
     </div>
 
+    <!-- Highest/Lowest Transactions -->
+    <div class="row mb-4 text-center">
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Highest Inflow</h5>
+                    <p class="h5 font-weight-bold">@HighestInflow?.Title ?? "N/A"</p>
+                    <p>@HighestInflow?.Amount.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Highest Outflow</h5>
+                    <p class="h5 font-weight-bold">@HighestOutflow?.Title ?? "N/A"</p>
+                    <p>@HighestOutflow?.Amount.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Highest Debt</h5>
+                    <p class="h5 font-weight-bold">@HighestDebt?.Title ?? "N/A"</p>
+                    <p>@HighestDebt?.Amount.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Transaction Report -->
     <div class="card shadow">
         <div class="card-header bg-primary text-white">
@@ -64,6 +95,22 @@
                 </div>
             </div>
 
+            <!-- Tag Filter Section -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h5>Filter by Tags</h5>
+                    <div class="d-flex flex-wrap">
+                        @foreach (var tag in AllTags)
+                        {
+                            <button class="btn btn-outline-primary mb-2 me-2 @GetTagButtonClass(tag)"
+                                    @onclick="() => ToggleTag(tag)">
+                                @tag
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
             <!-- Table -->
             <div class="table-responsive">
                 <table class="table-striped table-hover table">
@@ -73,6 +120,8 @@
                             <th scope="col">Amount</th>
                             <th scope="col">Type</th>
                             <th scope="col">Date</th>
+                            <th scope="col">Tags</th>
+                            <th scope="col">Note</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -85,13 +134,15 @@
                                     <td>@transaction.Amount.ToString("C")</td>
                                     <td>@transaction.Type</td>
                                     <td>@transaction.Date.ToString("yyyy-MM-dd")</td>
+                                    <td>@string.Join(", ", transaction.Tags)</td>
+                                    <td>@transaction.Note</td>
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="4" class="text-center">No transactions found.</td>
+                                <td colspan="6" class="text-center">No transactions found.</td>
                             </tr>
                         }
                     </tbody>
@@ -108,17 +159,24 @@
         .Where(t => string.IsNullOrWhiteSpace(SelectedType) || t.Type == SelectedType)
         .Where(t => !StartDate.HasValue || t.Date >= StartDate.Value)
         .Where(t => !EndDate.HasValue || t.Date <= EndDate.Value)
+        .Where(t => !Tags.Any() || t.Tags.Intersect(Tags).Any())
         .OrderBy(t => t.Date)
         .ToList();
 
     private decimal CashInflow { get; set; }
     private decimal CashOutflow { get; set; }
     private decimal TotalDebt { get; set; }
+    private Transaction? HighestInflow => Transactions.Where(t => t.Type == "Income").OrderByDescending(t => t.Amount).FirstOrDefault();
+    private Transaction? HighestOutflow => Transactions.Where(t => t.Type == "Expense").OrderByDescending(t => t.Amount).FirstOrDefault();
+    private Transaction? HighestDebt => Transactions.Where(t => t.Type == "Debt").OrderByDescending(t => t.Amount).FirstOrDefault();
+
     private int TotalTransactions => Transactions.Count;
     private string SearchText { get; set; } = string.Empty;
     private string SelectedType { get; set; } = string.Empty;
     private DateTime? StartDate { get; set; }
     private DateTime? EndDate { get; set; }
+    private List<string> Tags { get; set; } = new();
+    private List<string> AllTags => Transactions.SelectMany(t => t.Tags).Distinct().ToList();
 
     protected override void OnInitialized()
     {
@@ -146,7 +204,9 @@
                             Title = expense.ExpenseItem ?? "Unknown",
                             Amount = expense.ExpenseCost ?? 0,
                             Type = "Expense",
-                            Date = expense.ExpenseDate ?? DateTime.Today
+                            Date = expense.ExpenseDate ?? DateTime.Today,
+                            Tags = expense.Tags ?? new List<string>(),
+                            Note = expense.Note ?? string.Empty
                         });
                 }
             }
@@ -163,7 +223,9 @@
                             Title = income.IncomeTitle,
                             Amount = income.IncomeAmount,
                             Type = "Income",
-                            Date = income.IncomeDate
+                            Date = income.IncomeDate,
+                            Tags = income.Tags ?? new List<string>(),
+                            Note = income.Note ?? string.Empty
                         });
                 }
             }
@@ -180,7 +242,9 @@
                             Title = debt.DebtTitle,
                             Amount = debt.DebtAmount,
                             Type = "Debt",
-                            Date = debt.DebtDate
+                            Date = debt.DebtDate,
+                            Tags = debt.Tags ?? new List<string>(),
+                            Note = debt.Note ?? string.Empty
                         });
                 }
             }
@@ -200,12 +264,31 @@
         TotalDebt = Transactions.Where(t => t.Type == "Debt").Sum(t => t.Amount);
     }
 
+    private void ToggleTag(string tag)
+    {
+        if (Tags.Contains(tag))
+        {
+            Tags.Remove(tag);
+        }
+        else
+        {
+            Tags.Add(tag);
+        }
+    }
+
+    private string GetTagButtonClass(string tag)
+    {
+        return Tags.Contains(tag) ? "active btn-primary" : string.Empty;
+    }
+
     private class Transaction
     {
         public string Title { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public string Type { get; set; } = string.Empty;
         public DateTime Date { get; set; }
+        public List<string> Tags { get; set; } = new();
+        public string Note { get; set; } = string.Empty;
     }
 
     private class Expense
@@ -213,6 +296,8 @@
         public DateTime? ExpenseDate { get; set; }
         public string? ExpenseItem { get; set; }
         public decimal? ExpenseCost { get; set; }
+        public List<string>? Tags { get; set; }
+        public string? Note { get; set; }
     }
 
     private class Income
@@ -220,6 +305,8 @@
         public string IncomeTitle { get; set; } = string.Empty;
         public decimal IncomeAmount { get; set; }
         public DateTime IncomeDate { get; set; }
+        public List<string>? Tags { get; set; }
+        public string? Note { get; set; }
     }
 
     private class Debt
@@ -227,5 +314,8 @@
         public string DebtTitle { get; set; } = string.Empty;
         public decimal DebtAmount { get; set; }
         public DateTime DebtDate { get; set; }
+        public List<string>? Tags { get; set; }
+        public string? Note { get; set; }
     }
 }
+

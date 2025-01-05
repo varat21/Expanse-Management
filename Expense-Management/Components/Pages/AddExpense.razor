@@ -1,16 +1,13 @@
 ﻿@page "/addExpense"
 
 <div class="container py-5">
-    <!-- Header -->
     <div class="mb-5">
         <h1 class="text-center">Add Expense</h1>
     </div>
 
-    <!-- Expense Form -->
     <div class="card mx-auto shadow-lg">
         <div class="card-body">
             <form @onsubmit="AddExpenseHandler">
-                <!-- Item -->
                 <div class="mb-3">
                     <label for="item" class="form-label">Item</label>
                     <input type="text" id="item" placeholder="Enter item" @bind="ExpenseItem"
@@ -18,7 +15,6 @@
                            class="form-control" />
                 </div>
 
-                <!-- Cost of Item -->
                 <div class="mb-3">
                     <label for="expense-amount" class="form-label">Amount</label>
                     <input type="number" id="expense-amount" @bind="ExpenseCost"
@@ -26,7 +22,6 @@
                            class="form-control" />
                 </div>
 
-                <!-- Date -->
                 <div class="mb-3">
                     <label for="expense-date" class="form-label">Date</label>
                     <input type="date" id="expense-date" @bind="ExpenseDate"
@@ -34,7 +29,18 @@
                            class="form-control" />
                 </div>
 
-                <!-- Submit Button -->
+                <div class="mb-3">
+                    <label for="expense-tags" class="form-label">Tags (Comma Separated)</label>
+                    <input type="text" id="expense-tags" @bind="ExpenseTags"
+                           class="form-control" placeholder="e.g., Rent, Utilities" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="expense-note" class="form-label">Note</label>
+                    <textarea id="expense-note" @bind="ExpenseNote" class="form-control" rows="3"
+                              placeholder="Optional notes about the expense"></textarea>
+                </div>
+
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary">Add Expense</button>
                 </div>
@@ -47,6 +53,8 @@
     private DateTime? ExpenseDate { get; set; }
     private string? ExpenseItem { get; set; }
     private decimal? ExpenseCost { get; set; }
+    private string ExpenseTags { get; set; } = string.Empty;  
+    private string ExpenseNote { get; set; } = string.Empty;  
 
     [Inject]
     private NavigationManager NavManager { get; set; } = default!;
@@ -55,12 +63,16 @@
     {
         if (ExpenseDate != null && !string.IsNullOrEmpty(ExpenseItem) && ExpenseCost != null)
         {
-            SaveExpenseData();
+            var tagsList = string.IsNullOrWhiteSpace(ExpenseTags)
+                ? new List<string>()
+                : ExpenseTags.Split(',').Select(tag => tag.Trim()).ToList();
+
+            SaveExpenseData(tagsList);  
             NavManager.NavigateTo("/home");
         }
     }
 
-    private void SaveExpenseData()
+    private void SaveExpenseData(List<string> tags)
     {
         try
         {
@@ -68,10 +80,11 @@
                 {
                     ExpenseDate = ExpenseDate.Value,
                     ExpenseItem = ExpenseItem!,
-                    ExpenseCost = ExpenseCost.Value
+                    ExpenseCost = ExpenseCost.Value,
+                    Tags = tags,  
+                    Note = ExpenseNote  
                 };
 
-            // Path to save the JSON file
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Expense.json");
 
             List<Expense> expenses = new();
@@ -83,10 +96,10 @@
 
             expenses.Add(expense);
 
-            // Serialize updated data
+            // seralize updated data
             string jsonData = System.Text.Json.JsonSerializer.Serialize(expenses, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
 
-            // Save to file
+            // save to file
             File.WriteAllText(filePath, jsonData);
         }
         catch (Exception ex)
@@ -100,5 +113,7 @@
         public DateTime ExpenseDate { get; set; }
         public string ExpenseItem { get; set; } = string.Empty;
         public decimal ExpenseCost { get; set; }
+        public List<string> Tags { get; set; } = new();  
+        public string Note { get; set; } = string.Empty;  
     }
 }
