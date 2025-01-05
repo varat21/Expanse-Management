@@ -1,0 +1,135 @@
+﻿@page "/addDebt"
+
+<div class="p-4">
+    <div class="mb-4">
+        <h1 class="text-center">Add Debt</h1>
+    </div>
+
+    <div class="card mx-auto shadow-lg">
+        <div class="card-body">
+            <form @onsubmit="HandleSubmit">
+                <div class="mb-3">
+                    <label for="debt-title" class="form-label">Title</label>
+                    <input type="text" id="debt-title" @bind="DebtTitle"
+                           required
+                           placeholder="Enter title"
+                           class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="debt-amount" class="form-label">Amount</label>
+                    <input type="number" id="debt-amount" @bind="DebtAmount"
+                           required
+                            placeholder="Enter Amount"
+
+                           class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="debt-date" class="form-label">Date</label>
+                    <input type="date" id="debt-date" @bind="DebtDate"
+                           required
+                           placeholder="Enter date"
+                           class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="debt-tags" class="form-label">Tags (Comma Separated)</label>
+                    <input type="text" id="debt-tags" @bind="DebtTags"
+                    
+                           class="form-control" placeholder="e.g., Loan, Personal" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="debt-note" class="form-label">Note</label>
+                    <textarea id="debt-note" @bind="DebtNote" class="form-control" rows="3"
+                              placeholder="Optional notes about the debt"></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Add Debt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string DebtTitle { get; set; } = string.Empty;
+    private decimal DebtAmount { get; set; }
+    private DateTime DebtDate { get; set; } = DateTime.Today;
+    private string DebtTags { get; set; } = string.Empty;  
+    private string DebtNote { get; set; } = string.Empty;
+    private string Status { get; set; } = "pending";
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    private void HandleSubmit()
+    {
+        if (!string.IsNullOrWhiteSpace(DebtTitle) && DebtAmount > 0)
+        {
+            var tagsList = string.IsNullOrWhiteSpace(DebtTags)
+                ? new List<string>()
+                : DebtTags.Split(',').Select(tag => tag.Trim()).ToList();
+
+            SaveDebtData(tagsList); 
+
+            NavigationManager.NavigateTo("/home");
+
+            DebtTitle = string.Empty;
+            DebtAmount = 0;
+            DebtTags = string.Empty;
+            DebtNote = string.Empty;
+            Status = "Pending";
+
+        }
+    }
+
+    private void SaveDebtData(List<string> tags)
+    {
+        try
+        {
+            var newDebt = new Debt
+                {
+                    DebtTitle = DebtTitle,
+                    DebtAmount = DebtAmount,
+                    DebtDate = DebtDate,
+                    Tags = tags,  
+                    Note = DebtNote,
+                    Status = Status,
+
+                };
+
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Debt.json");
+
+            List<Debt> debts = new();
+            if (File.Exists(filePath))
+            {
+                var existingData = File.ReadAllText(filePath);
+                debts = System.Text.Json.JsonSerializer.Deserialize<List<Debt>>(existingData) ?? new List<Debt>();
+            }
+
+            debts.Add(newDebt);
+
+            string jsonData = System.Text.Json.JsonSerializer.Serialize(debts, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+            File.WriteAllText(filePath, jsonData);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving debt data: {ex.Message}");
+        }
+    }
+
+    private class Debt
+    {
+        public string DebtTitle { get; set; } = string.Empty;
+        public decimal DebtAmount { get; set; }
+        public DateTime DebtDate { get; set; }
+        public List<string> Tags { get; set; } = new();  
+        public string Note { get; set; } = string.Empty;  
+        public string Status { get; set; } = "pending";
+
+    }
+}

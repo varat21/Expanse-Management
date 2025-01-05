@@ -1,0 +1,123 @@
+﻿@page "/register"
+
+<div class="d-flex min-vh-100 align-items-center justify-content-center bg-danger">
+    <div class="card p-4 shadow-lg" style="width: 25rem;">
+        <h1 class="h3 font-weight-bold mb-4 text-center">Register</h1>
+
+        @if (ShowRegisterFailedAlert)
+        {
+                <div class="alert alert-danger" role="alert">
+                    Registration failed. Please fill all the required fields!
+                </div>
+        }
+
+        <form @onsubmit="RegisterHandler">
+            <!-- Full Name Input -->
+            <div class="mb-3">
+                <label class="form-label" for="fullname">Full Name:</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fa-regular fa-user"></i>
+                    </span>
+                    <input id="fullname"
+                           required
+                           type="text"
+                           @bind="FullName"
+                           placeholder="Enter your full name"
+                           class="form-control" />
+                </div>
+            </div>
+
+            <!-- Currency Input -->
+            <div class="mb-3">
+                <label class="form-label" for="currency">Currency:</label>
+                <select id="currency"
+                        required
+                        @bind="SelectedCurrency"
+                        class="form-select">
+                    <option value="usd">USD</option>
+                    <option value="npr">Nepali Rupee (NPR)</option>
+                    <option value="eur">Euro (EUR)</option>
+                </select>
+            </div>
+
+            <!-- Password Input -->
+            <div class="mb-3">
+                <label class="form-label" for="password">Password:</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fa-regular fa-eye"></i>
+                    </span>
+                    <input id="password"
+                           required
+                           type="password"
+                           @bind="Password"
+                           placeholder="Enter Password"
+                           class="form-control" />
+                </div>
+            </div>
+
+            <!-- Register Button -->
+            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+        </form>
+
+        <!-- Already Registered Link -->
+        <p class="text-muted mt-3 text-center">
+            Already have an account?
+            <a href="/" class="text-primary text-decoration-none">Sign In</a>
+        </p>
+    </div>
+</div>
+
+@code {
+    private string? FullName { get; set; }
+    private string? SelectedCurrency { get; set; } = "usd";
+    private string? Password { get; set; }
+    private bool ShowRegisterFailedAlert = false;
+
+    [Inject]
+    private NavigationManager NavManager { get; set; } = default!;
+
+    private void RegisterHandler()
+    {
+        if (!string.IsNullOrEmpty(FullName) && !string.IsNullOrEmpty(Password))
+        {
+            // Save data to JSON file
+            SaveRegistrationData();
+
+            // Navigate to home
+            NavManager.NavigateTo("/home");
+        }
+        else
+        {
+            ShowRegisterFailedAlert = true;
+        }
+    }
+
+    private void SaveRegistrationData()
+    {
+        try
+        {
+            var registrationData = new
+            {
+                FullName,
+                SelectedCurrency,
+                Password
+            };
+
+            // Path to save the JSON file
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "RegistrationData.json");
+
+            // Serialize data to JSON
+            string jsonData = System.Text.Json.JsonSerializer.Serialize(registrationData, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+            // Save to file
+            File.WriteAllText(filePath, jsonData);
+        }
+        catch (Exception ex)
+        {
+            // Handle file save exceptions
+            Console.WriteLine($"Error saving registration data: {ex.Message}");
+        }
+    }
+}
