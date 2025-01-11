@@ -1,14 +1,14 @@
 ﻿@page "/addIncome"
-<div class="container py-4">
+<div class="container-fluid py-4 shadow-lg min-width-99">
     <div class="w-75 mb-4">
         <h1 class="text-center">Add Income</h1>
     </div>
 
-    <div class="card shadow">
-        <div class="card-body">
+    <div>
+        <div>
             <form @onsubmit="HandleSubmit">
                 <div class="mb-3">
-                    <label for="income-title" class="form-label">
+                    <label class="form-label">
                         Title
                     </label>
                     <input type="text" id="income-title" @bind="IncomeTitle"

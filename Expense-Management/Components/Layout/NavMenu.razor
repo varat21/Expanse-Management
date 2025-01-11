@@ -1,48 +1,26 @@
-﻿<div class="top-row navbar navbar-dark bg-primary ps-3">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">EM</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler d-none" />
-
-<div class="nav-scrollable border-secondary bg-light text-dark border p-3" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="d-flex flex-column">
-
-
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link d-flex align-items-center text-dark" href="home" Match="NavLinkMatch.All">
-                <i class="bi bi-house-door-fill me-2"></i>
-                <span class="fw-bold">Dashboard</span>
-            </NavLink>
-        </div> 
-
-
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link d-flex align-items-center text-dark" href="addExpense">
-                <i class="fa-solid fa-file-invoice me-2"></i>
-                <span class="fw-bold">Add Expense</span>
+﻿<div class="nav-scrollable position-fixed" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="home" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
             </NavLink>
         </div>
-
-       
-        
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link d-flex align-items-center text-dark" href="addIncome">
-                <i class="bi bi-list-nested me-2"></i>
-                <span class="fw-bold">Add Income</span>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="addIncome">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Add Income
             </NavLink>
         </div>
-
-
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link d-flex align-items-center text-dark" href="addDebt">
-                <i class="bi bi-list-nested me-2"></i>
-                <span class="fw-bold">Add Debt</span>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="addExpense">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Add Expense
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="addDebt">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Add Debt
             </NavLink>
         </div>
     </nav>
 </div>
+
+

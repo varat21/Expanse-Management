@@ -1,6 +1,6 @@
 ﻿@page "/home"
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 shadow-lg min-width-99">
     <!-- Summary Cards -->
     <div class="row mb-4 text-center">
         <div class="col-md-3">
@@ -43,7 +43,7 @@
             <div class="card shadow">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Highest Inflow</h5>
-                    <p class="h5 font-weight-bold">@HighestInflow?.Title ?? "N/A"</p>
+                    <p class="h5 font-weight-bold">@HighestInflow?.Title </p>
                     <p>@HighestInflow?.Amount.ToString("C")</p>
                 </div>
             </div>
@@ -52,7 +52,7 @@
             <div class="card shadow">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Highest Outflow</h5>
-                    <p class="h5 font-weight-bold">@HighestOutflow?.Title ?? "N/A"</p>
+                    <p class="h5 font-weight-bold">@HighestOutflow?.Title </p>
                     <p>@HighestOutflow?.Amount.ToString("C")</p>
                 </div>
             </div>
@@ -61,7 +61,7 @@
             <div class="card shadow">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Highest Debt</h5>
-                    <p class="h5 font-weight-bold">@HighestDebt?.Title ?? "N/A"</p>
+                    <p class="h5 font-weight-bold">@HighestDebt?.Title </p>
                     <p>@HighestDebt?.Amount.ToString("C")</p>
                 </div>
             </div>
@@ -88,7 +88,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <div class="d-flex">
+                    <div class="d-flex flex-column">
                         <input type="date" class="form-control me-2" @bind="StartDate" />
                         <input type="date" class="form-control" @bind="EndDate" />
                     </div>
@@ -113,15 +113,16 @@
 
             <!-- Table -->
             <div class="table-responsive">
-                <table class="table-striped table-hover table">
+                <table class="table-striped table-hover table ">
                     <thead class="table-light">
                         <tr>
                             <th scope="col">Title</th>
                             <th scope="col">Amount</th>
                             <th scope="col">Type</th>
-                            <th scope="col">Date</th>
+                            <th scope="col">Date <i class="fa-solid fa-sort" @onclick="ToggleSort"></i></th>
                             <th scope="col">Tags</th>
                             <th scope="col">Note</th>
+                            <th scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -136,13 +137,14 @@
                                     <td>@transaction.Date.ToString("yyyy-MM-dd")</td>
                                     <td>@string.Join(", ", transaction.Tags)</td>
                                     <td>@transaction.Note</td>
+                                    <td>@transaction.Status</td>
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="6" class="text-center">No transactions found.</td>
+                                <td class="text-center">No transactions found.</td>
                             </tr>
                         }
                     </tbody>
@@ -160,7 +162,8 @@
         .Where(t => !StartDate.HasValue || t.Date >= StartDate.Value)
         .Where(t => !EndDate.HasValue || t.Date <= EndDate.Value)
         .Where(t => !Tags.Any() || t.Tags.Intersect(Tags).Any())
-        .OrderBy(t => t.Date)
+        .OrderBy(t => SortAscending ? t.Date : (DateTime?)null)
+        .ThenByDescending(t => !SortAscending ? t.Date : (DateTime?)null)
         .ToList();
 
     private decimal CashInflow { get; set; }
@@ -177,6 +180,8 @@
     private DateTime? EndDate { get; set; }
     private List<string> Tags { get; set; } = new();
     private List<string> AllTags => Transactions.SelectMany(t => t.Tags).Distinct().ToList();
+
+    private bool SortAscending { get; set; } = true;
 
     protected override void OnInitialized()
     {
@@ -206,7 +211,7 @@
                             Type = "Expense",
                             Date = expense.ExpenseDate ?? DateTime.Today,
                             Tags = expense.Tags ?? new List<string>(),
-                            Note = expense.Note ?? string.Empty
+                            Note = expense.Note ?? string.Empty,
                         });
                 }
             }
@@ -244,7 +249,9 @@
                             Type = "Debt",
                             Date = debt.DebtDate,
                             Tags = debt.Tags ?? new List<string>(),
-                            Note = debt.Note ?? string.Empty
+                            Note = debt.Note ?? string.Empty,
+                            Status = debt.Status // Include Status here
+
                         });
                 }
             }
@@ -257,10 +264,10 @@
 
     private void CalculateSummary()
     {
-        CashInflow = Transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+        CashInflow = Transactions.Where(t => t.Type == "Income" || t.Type == "Debt").Sum(t => Math.Abs(t.Amount));
         CashOutflow = Transactions
-            .Where(t => t.Type == "Expense" || t.Type == "Debt")
-            .Sum(t => Math.Abs(t.Amount));
+            .Where(t => t.Type == "Expense")
+            .Sum(t => (t.Amount));
         TotalDebt = Transactions.Where(t => t.Type == "Debt").Sum(t => t.Amount);
     }
 
@@ -281,6 +288,11 @@
         return Tags.Contains(tag) ? "active btn-primary" : string.Empty;
     }
 
+    private void ToggleSort()
+    {
+        SortAscending = !SortAscending;
+    }
+
     private class Transaction
     {
         public string Title { get; set; } = string.Empty;
@@ -289,6 +301,8 @@
         public DateTime Date { get; set; }
         public List<string> Tags { get; set; } = new();
         public string Note { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty; // Add this property
+
     }
 
     private class Expense
@@ -316,6 +330,6 @@
         public DateTime DebtDate { get; set; }
         public List<string>? Tags { get; set; }
         public string? Note { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }
-
