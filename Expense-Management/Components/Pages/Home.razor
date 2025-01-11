@@ -6,7 +6,7 @@
         <div class="col-md-3">
             <div class="card shadow">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Total Transactions</h5>
+                    <h5 class="card-title text-muted">Total Number Transactions</h5>
                     <p class="h4 font-weight-bold">@TotalTransactions</p>
                 </div>
             </div>
@@ -39,34 +39,44 @@
 
     <!-- Highest/Lowest Transactions -->
     <div class="row mb-4 text-center">
-        <div class="col-md-4">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Highest Inflow</h5>
-                    <p class="h5 font-weight-bold">@HighestInflow?.Title </p>
+        <div class="col-6 col-sm-3">
+            <div class="card shadow" style="font-size: 0.9rem;">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-muted">Total transactions </h6>
+                    <p class="h6 font-weight-bold">varat</p>
+                    <p></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="card shadow" style="font-size: 0.9rem;">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-muted">Highest Inflow</h6>
+                    <p class="h6 font-weight-bold">@HighestInflow?.Title</p>
                     <p>@HighestInflow?.Amount.ToString("C")</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Highest Outflow</h5>
-                    <p class="h5 font-weight-bold">@HighestOutflow?.Title </p>
+        <div class="col-6 col-sm-3">
+            <div class="card shadow" style="font-size: 0.9rem;">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-muted">Highest Outflow</h6>
+                    <p class="h6 font-weight-bold">@HighestOutflow?.Title</p>
                     <p>@HighestOutflow?.Amount.ToString("C")</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Highest Debt</h5>
-                    <p class="h5 font-weight-bold">@HighestDebt?.Title </p>
+        <div class="col-6 col-sm-3">
+            <div class="card shadow" style="font-size: 0.9rem;">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-muted">Highest Debt</h6>
+                    <p class="h6 font-weight-bold">@HighestDebt?.Title</p>
                     <p>@HighestDebt?.Amount.ToString("C")</p>
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Transaction Report -->
     <div class="card shadow">

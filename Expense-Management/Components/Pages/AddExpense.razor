@@ -41,6 +41,13 @@
                               placeholder="Optional notes about the expense"></textarea>
                 </div>
 
+                @if (ShowInsufficientBalanceAlert)
+                {
+                    <div class="alert alert-danger mt-3" role="alert">
+                        Insufficient balance for this expense.
+                    </div>
+                }
+
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary">Add Expense</button>
                 </div>
@@ -53,23 +60,40 @@
     private DateTime? ExpenseDate { get; set; }
     private string? ExpenseItem { get; set; }
     private decimal? ExpenseCost { get; set; }
-    private string ExpenseTags { get; set; } = string.Empty;  
-    private string ExpenseNote { get; set; } = string.Empty;  
+    private string ExpenseTags { get; set; } = string.Empty;
+    private string ExpenseNote { get; set; } = string.Empty;
+    private bool ShowInsufficientBalanceAlert { get; set; } = false;
 
     [Inject]
     private NavigationManager NavManager { get; set; } = default!;
 
+    private decimal CurrentBalance { get; set; } = 1000.00m;  // Example balance
+
     private void AddExpenseHandler()
     {
+        ShowInsufficientBalanceAlert = false;
+
         if (ExpenseDate != null && !string.IsNullOrEmpty(ExpenseItem) && ExpenseCost != null)
         {
-            var tagsList = string.IsNullOrWhiteSpace(ExpenseTags)
-                ? new List<string>()
-                : ExpenseTags.Split(',').Select(tag => tag.Trim()).ToList();
+            if (IsSufficientBalance(ExpenseCost.Value))
+            {
+                var tagsList = string.IsNullOrWhiteSpace(ExpenseTags)
+                    ? new List<string>()
+                    : ExpenseTags.Split(',').Select(tag => tag.Trim()).ToList();
 
-            SaveExpenseData(tagsList);  
-            NavManager.NavigateTo("/home");
+                SaveExpenseData(tagsList);
+                NavManager.NavigateTo("/home");
+            }
+            else
+            {
+                ShowInsufficientBalanceAlert = true;
+            }
         }
+    }
+
+    private bool IsSufficientBalance(decimal expenseCost)
+    {
+        return expenseCost <= CurrentBalance;
     }
 
     private void SaveExpenseData(List<string> tags)
@@ -81,8 +105,8 @@
                     ExpenseDate = ExpenseDate.Value,
                     ExpenseItem = ExpenseItem!,
                     ExpenseCost = ExpenseCost.Value,
-                    Tags = tags,  
-                    Note = ExpenseNote  
+                    Tags = tags,
+                    Note = ExpenseNote
                 };
 
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Expense.json");
@@ -96,11 +120,14 @@
 
             expenses.Add(expense);
 
-            // seralize updated data
+            // Serialize updated data
             string jsonData = System.Text.Json.JsonSerializer.Serialize(expenses, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
 
-            // save to file
+            // Save to file
             File.WriteAllText(filePath, jsonData);
+
+            // Deduct expense from balance
+            CurrentBalance -= expense.ExpenseCost;
         }
         catch (Exception ex)
         {
@@ -113,7 +140,7 @@
         public DateTime ExpenseDate { get; set; }
         public string ExpenseItem { get; set; } = string.Empty;
         public decimal ExpenseCost { get; set; }
-        public List<string> Tags { get; set; } = new();  
-        public string Note { get; set; } = string.Empty;  
+        public List<string> Tags { get; set; } = new();
+        public string Note { get; set; } = string.Empty;
     }
 }
