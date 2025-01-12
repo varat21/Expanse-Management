@@ -1,4 +1,9 @@
 ﻿@page "/addExpense"
+@using Expense_Management.Components.Layout
+<div class="page d-flex bg-white">
+    <div class="sidebar bg-white text-dark">
+        <NavMenu /> 
+     </div>
 
 <div class="container-fluid py-4 shadow-lg min-width-99">
     <div class="mb-5">
@@ -55,7 +60,7 @@
         </div>
     </div>
 </div>
-
+</div>
 @code {
     private DateTime? ExpenseDate { get; set; }
     private string? ExpenseItem { get; set; }

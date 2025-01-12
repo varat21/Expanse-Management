@@ -1,4 +1,9 @@
 ﻿@page "/addDebt"
+@using Expense_Management.Components.Layout
+<div class="page d-flex bg-white">
+    <div class="sidebar bg-white text-dark">
+        <NavMenu /> 
+     </div>
 
 <div class="container-fluid py-4 shadow-lg min-width-99">
     <div class="mb-4">
@@ -53,7 +58,7 @@
         </div>
     </div>
 </div>
-
+</div>
 @code {
     private string DebtTitle { get; set; } = string.Empty;
     private decimal DebtAmount { get; set; }
