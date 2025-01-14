@@ -1,176 +1,199 @@
 ﻿@page "/home"
 @using Expense_Management.Components.Layout
+
 <div class="page d-flex bg-white">
     <div class="sidebar bg-white text-dark">
         <NavMenu /> 
-     </div>
-
-<div class="container-fluid py-4 shadow-lg min-width-99">
-    <!-- Summary Cards -->
-    <div class="row mb-4 text-center">
-        <div class="col-md-3">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Total Number Transactions</h5>
-                    <p class="h4 font-weight-bold">@TotalTransactions</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Cash Inflow</h5>
-                    <p class="h4 font-weight-bold">@CashInflow.ToString("C")</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Cash Outflow</h5>
-                    <p class="h4 font-weight-bold">@CashOutflow.ToString("C")</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Debt</h5>
-                    <p class="h4 font-weight-bold">@TotalDebt.ToString("C")</p>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Highest/Lowest Transactions -->
-    <div class="row mb-4 text-center">
-        <div class="col-6 col-sm-3">
-            <div class="card shadow" style="font-size: 0.9rem;">
-                <div class="card-body p-2">
-                    <h6 class="card-title text-muted">Total transactions </h6>
-                    <p class="h6 font-weight-bold">varat</p>
-                    <p></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-sm-3">
-            <div class="card shadow" style="font-size: 0.9rem;">
-                <div class="card-body p-2">
-                    <h6 class="card-title text-muted">Highest Inflow</h6>
-                    <p class="h6 font-weight-bold">@HighestInflow?.Title</p>
-                    <p>@HighestInflow?.Amount.ToString("C")</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-sm-3">
-            <div class="card shadow" style="font-size: 0.9rem;">
-                <div class="card-body p-2">
-                    <h6 class="card-title text-muted">Highest Outflow</h6>
-                    <p class="h6 font-weight-bold">@HighestOutflow?.Title</p>
-                    <p>@HighestOutflow?.Amount.ToString("C")</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-sm-3">
-            <div class="card shadow" style="font-size: 0.9rem;">
-                <div class="card-body p-2">
-                    <h6 class="card-title text-muted">Highest Debt</h6>
-                    <p class="h6 font-weight-bold">@HighestDebt?.Title</p>
-                    <p>@HighestDebt?.Amount.ToString("C")</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Transaction Report -->
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Transaction Report</h4>
-        </div>
-        <div class="card-body">
-            <!-- Search and Filter Section -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <input type="text" class="form-control" placeholder="Search by title" @bind="SearchText" />
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" @bind="SelectedType">
-                        <option value="">All Types</option>
-                        <option value="Income">Income</option>
-                        <option value="Expense">Expense</option>
-                        <option value="Debt">Debt</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <div class="d-flex flex-column">
-                        <input type="date" class="form-control me-2" @bind="StartDate" />
-                        <input type="date" class="form-control" @bind="EndDate" />
+    <div class="container-fluid py-4 shadow-lg min-width-99">
+        <!-- Summary Cards -->
+        <div class="row mb-4 text-center">
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted">Total Number Transactions</h5>
+                        <p class="h4 font-weight-bold">@TotalTransactions</p>
                     </div>
                 </div>
             </div>
-
-            <!-- Tag Filter Section -->
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <h5>Filter by Tags</h5>
-                    <div class="d-flex flex-wrap">
-                        @foreach (var tag in AllTags)
-                        {
-                            <button class="btn btn-outline-primary mb-2 me-2 @GetTagButtonClass(tag)"
-                                    @onclick="() => ToggleTag(tag)">
-                                @tag
-                            </button>
-                        }
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted">Cash Inflow</h5>
+                        <p class="h4 font-weight-bold">@CashInflow.ToString("C")</p>
                     </div>
                 </div>
             </div>
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted">Cash Outflow</h5>
+                        <p class="h4 font-weight-bold">@CashOutflow.ToString("C")</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted">Debt</h5>
+                        <p class="h4 font-weight-bold">@TotalDebt.ToString("C")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <!-- Table -->
-            <div class="table-responsive">
-                <table class="table-striped table-hover table ">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Title</th>
-                            <th scope="col">Amount</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Date <i class="fa-solid fa-sort" @onclick="ToggleSort"></i></th>
-                            <th scope="col">Tags</th>
-                            <th scope="col">Note</th>
-                            <th scope="col">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (FilteredTransactions.Any())
-                        {
-                            @foreach (var transaction in FilteredTransactions)
+        <!-- Error Alert -->
+        @if (IsError)
+        {
+            <div class="alert alert-danger" role="alert">
+                Cash Outflow exceeds Total Amount Transactions. Please check your data.
+            </div>
+        }
+
+        <!-- Highest/Lowest Transactions -->
+        <div class="row mb-4 text-center">
+            <div class="col-6 col-sm-3">
+                <div class="card shadow" style="font-size: 0.9rem;">
+                    <div class="card-body p-2">
+                        <h6 class="card-title text-muted">Total transactions </h6>
+                        <p class="h6 font-weight-bold">@TotalAmountTransactions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-3">
+                <div class="card shadow" style="font-size: 0.9rem;">
+                    <div class="card-body p-2">
+                        <h6 class="card-title text-muted">Highest Inflow</h6>
+                        <p class="h6 font-weight-bold">@HighestInflow?.Title</p>
+                        <p>@HighestInflow?.Amount.ToString("C")</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-3">
+                <div class="card shadow" style="font-size: 0.9rem;">
+                    <div class="card-body p-2">
+                        <h6 class="card-title text-muted">Highest Outflow</h6>
+                        <p class="h6 font-weight-bold">@HighestOutflow?.Title</p>
+                        <p>@HighestOutflow?.Amount.ToString("C")</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-3">
+                <div class="card shadow" style="font-size: 0.9rem;">
+                    <div class="card-body p-2">
+                        <h6 class="card-title text-muted">Highest Debt</h6>
+                        <p class="h6 font-weight-bold">@HighestDebt?.Title</p>
+                        <p>@HighestDebt?.Amount.ToString("C")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Report -->
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Transaction Report</h4>
+            </div>
+            <div class="card-body">
+                <!-- Search and Filter Section -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" placeholder="Search by title" @bind="SearchText" />
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" @bind="SelectedType">
+                            <option value="">All Types</option>
+                            <option value="Income">Income</option>
+                            <option value="Expense">Expense</option>
+                            <option value="Debt">Debt</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex flex-column">
+                            <input type="date" class="form-control me-2" @bind="StartDate" />
+                            <input type="date" class="form-control" @bind="EndDate" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tag Filter Section -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h5>Filter by Tags</h5>
+                        <div class="d-flex flex-wrap">
+                            @foreach (var tag in AllTags)
                             {
-                                <tr>
-                                    <td>@transaction.Title</td>
-                                    <td>@transaction.Amount.ToString("C")</td>
-                                    <td>@transaction.Type</td>
-                                    <td>@transaction.Date.ToString("yyyy-MM-dd")</td>
-                                    <td>@string.Join(", ", transaction.Tags)</td>
-                                    <td>@transaction.Note</td>
-                                    <td>@transaction.Status</td>
-                                </tr>
+                                <button class="btn btn-outline-primary mb-2 me-2 @GetTagButtonClass(tag)"
+                                @onclick="() => ToggleTag(tag)">
+                                    @tag
+                                </button>
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td class="text-center">No transactions found.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+<div class="table-responsive">
+    <table class="table-striped table-hover table">
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Type</th>
+                <th scope="col">Date <i class="fa-solid fa-sort" @onclick="ToggleSort"></i></th>
+                <th scope="col">Tags</th>
+                <th scope="col">Note</th>
+                <th scope="col">Status</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+      <tbody>
+                            @if (FilteredTransactions.Any())
+                            {
+                                @foreach (var transaction in FilteredTransactions)
+                                {
+                    <tr>
+                        <td>@transaction.Title</td>
+                        <td>@transaction.Amount.ToString("C")</td>
+                        <td>@transaction.Type</td>
+                        <td>@transaction.Date.ToString("yyyy-MM-dd")</td>
+                        <td>@string.Join(", ", transaction.Tags)</td>
+                        <td>@transaction.Note</td>
+                        <td>@transaction.Status</td>
+                        <td>
+                                            @if (transaction.Status == "pending")
+                                            {
+                                    <button class="btn btn-primary" @onclick="() => ClearDebt(transaction)">Clear Debt</button>
+                                            }
+                                            @if (!string.IsNullOrEmpty(transaction.ErrorMessage))
+                                            {
+                                    <div class="error-message">@transaction.ErrorMessage</div>
+                                            }
+                        </td>
+                    </tr>
+                                }
+                            }
+                            else
+                            {
+            <tr>
+                <td colspan="8" class="text-center">No transactions found.</td>
+            </tr>
+                            }
+</tbody>
+
+
+    </table>
+</div>
             </div>
         </div>
     </div>
 </div>
-</div>
+
 @code {
     private List<Transaction> Transactions { get; set; } = new();
+        public string ErrorMessage { get; set; }
+
     private List<Transaction> FilteredTransactions => Transactions
         .Where(t => string.IsNullOrWhiteSpace(SearchText) || t.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
         .Where(t => string.IsNullOrWhiteSpace(SelectedType) || t.Type == SelectedType)
@@ -181,13 +204,15 @@
         .ThenByDescending(t => !SortAscending ? t.Date : (DateTime?)null)
         .ToList();
 
+    private decimal TotalAmountTransactions { get; set; }
     private decimal CashInflow { get; set; }
+    private decimal CashOfDebt { get; set; }
+
     private decimal CashOutflow { get; set; }
     private decimal TotalDebt { get; set; }
     private Transaction? HighestInflow => Transactions.Where(t => t.Type == "Income").OrderByDescending(t => t.Amount).FirstOrDefault();
     private Transaction? HighestOutflow => Transactions.Where(t => t.Type == "Expense").OrderByDescending(t => t.Amount).FirstOrDefault();
     private Transaction? HighestDebt => Transactions.Where(t => t.Type == "Debt").OrderByDescending(t => t.Amount).FirstOrDefault();
-
     private int TotalTransactions => Transactions.Count;
     private string SearchText { get; set; } = string.Empty;
     private string SelectedType { get; set; } = string.Empty;
@@ -195,8 +220,8 @@
     private DateTime? EndDate { get; set; }
     private List<string> Tags { get; set; } = new();
     private List<string> AllTags => Transactions.SelectMany(t => t.Tags).Distinct().ToList();
-
     private bool SortAscending { get; set; } = true;
+    private bool IsError { get; set; } = false;
 
     protected override void OnInitialized()
     {
@@ -220,14 +245,14 @@
                 foreach (var expense in expenses)
                 {
                     Transactions.Add(new Transaction
-                        {
-                            Title = expense.ExpenseItem ?? "Unknown",
-                            Amount = expense.ExpenseCost ?? 0,
-                            Type = "Expense",
-                            Date = expense.ExpenseDate ?? DateTime.Today,
-                            Tags = expense.Tags ?? new List<string>(),
-                            Note = expense.Note ?? string.Empty,
-                        });
+                    {
+                        Title = expense.ExpenseItem ?? "Unknown",
+                        Amount = expense.ExpenseCost ?? 0,
+                        Type = "Expense",
+                        Date = expense.ExpenseDate ?? DateTime.Today,
+                        Tags = expense.Tags ?? new List<string>(),
+                        Note = expense.Note ?? string.Empty,
+                    });
                 }
             }
 
@@ -239,14 +264,14 @@
                 foreach (var income in incomes)
                 {
                     Transactions.Add(new Transaction
-                        {
-                            Title = income.IncomeTitle,
-                            Amount = income.IncomeAmount,
-                            Type = "Income",
-                            Date = income.IncomeDate,
-                            Tags = income.Tags ?? new List<string>(),
-                            Note = income.Note ?? string.Empty
-                        });
+                    {
+                        Title = income.IncomeTitle,
+                        Amount = income.IncomeAmount,
+                        Type = "Income",
+                        Date = income.IncomeDate,
+                        Tags = income.Tags ?? new List<string>(),
+                        Note = income.Note ?? string.Empty
+                    });
                 }
             }
 
@@ -258,16 +283,15 @@
                 foreach (var debt in debts)
                 {
                     Transactions.Add(new Transaction
-                        {
-                            Title = debt.DebtTitle,
-                            Amount = debt.DebtAmount,
-                            Type = "Debt",
-                            Date = debt.DebtDate,
-                            Tags = debt.Tags ?? new List<string>(),
-                            Note = debt.Note ?? string.Empty,
-                            Status = debt.Status // Include Status here
-
-                        });
+                    {
+                        Title = debt.DebtTitle,
+                        Amount = debt.DebtAmount,
+                        Type = "Debt",
+                        Date = debt.DebtDate,
+                        Tags = debt.Tags ?? new List<string>(),
+                        Note = debt.Note ?? string.Empty,
+                        Status = debt.Status
+                    });
                 }
             }
         }
@@ -279,12 +303,29 @@
 
     private void CalculateSummary()
     {
-        CashInflow = Transactions.Where(t => t.Type == "Income" || t.Type == "Debt").Sum(t => Math.Abs(t.Amount));
+        // Calculate CashInflow, CashOutflow, and TotalDebt
+        CashInflow = Transactions
+            .Where(t => t.Type == "Income" || t.Type == "Debt")
+            .Sum(t => Math.Abs(t.Amount));
+
         CashOutflow = Transactions
             .Where(t => t.Type == "Expense")
-            .Sum(t => (t.Amount));
-        TotalDebt = Transactions.Where(t => t.Type == "Debt").Sum(t => t.Amount);
-    }
+            .Sum(t => t.Amount);
+
+        TotalDebt = Transactions
+            .Where(t => t.Type == "Debt" && t.Status == "pending")
+            .Sum(t => t.Amount);
+
+        // Calculate TotalAmountTransactions
+        TotalAmountTransactions = TotalDebt + CashInflow - CashOutflow;
+
+        // Ensure TotalAmountTransactions is not negative
+    //     if (TotalAmountTransactions < 0)
+    //     {
+    //         TotalAmountTransactions = 0;
+    //     }
+     }
+
 
     private void ToggleTag(string tag)
     {
@@ -316,7 +357,8 @@
         public DateTime Date { get; set; }
         public List<string> Tags { get; set; } = new();
         public string Note { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty; // Add this property
+        public string Status { get; set; } = string.Empty;
+        public string ErrorMessage { get; set; }
 
     }
 
@@ -347,4 +389,39 @@
         public string? Note { get; set; }
         public string Status { get; set; } = string.Empty;
     }
+    private void ClearDebt(Transaction transaction)
+    {
+        if (TotalAmountTransactions < transaction.Amount)
+        {
+            transaction.ErrorMessage = "Not enough funds to clear this debt.";
+            StateHasChanged(); // Update the UI
+            return;
+        }
+
+        transaction.Status = "cleared";
+        transaction.ErrorMessage = string.Empty; // Clear any previous error
+
+        try
+        {
+            string debtFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Debt.json");
+            var debtData = File.ReadAllText(debtFilePath);
+            var debts = System.Text.Json.JsonSerializer.Deserialize<List<Debt>>(debtData) ?? new List<Debt>();
+
+            var matchingDebt = debts.FirstOrDefault(d => d.DebtTitle == transaction.Title && d.DebtAmount == transaction.Amount && d.DebtDate == transaction.Date);
+            if (matchingDebt != null)
+            {
+                matchingDebt.Status = "cleared";
+            }
+
+            var updatedDebtData = System.Text.Json.JsonSerializer.Serialize(debts, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(debtFilePath, updatedDebtData);
+        }
+        catch (Exception ex)
+        {
+            transaction.ErrorMessage = $"Error updating debt status: {ex.Message}";
+        }
+
+        StateHasChanged(); // Ensure UI refresh
+    }
+
 }

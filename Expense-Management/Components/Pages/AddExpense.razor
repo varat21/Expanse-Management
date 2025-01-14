@@ -3,63 +3,56 @@
 <div class="page d-flex bg-white">
     <div class="sidebar bg-white text-dark">
         <NavMenu /> 
-     </div>
-
-<div class="container-fluid py-4 shadow-lg min-width-99">
-    <div class="mb-5">
-        <h1 class="text-center">Add Expense</h1>
     </div>
 
-    <div class="card mx-auto">
-        <div class="card-body">
-            <form @onsubmit="AddExpenseHandler">
-                <div class="mb-3">
-                    <label for="item" class="form-label">Item</label>
-                    <input type="text" id="item" placeholder="Enter item" @bind="ExpenseItem"
-                           required
-                           class="form-control" />
-                </div>
+    <div class="container-fluid py-4 shadow-lg min-width-99">
+        <div class="mb-5">
+            <h1 class="text-center">Add Expense</h1>
+        </div>
 
-                <div class="mb-3">
-                    <label for="expense-amount" class="form-label">Amount</label>
-                    <input type="number" id="expense-amount" @bind="ExpenseCost"
-                           required
-                           class="form-control" />
-                </div>
-
-                <div class="mb-3">
-                    <label for="expense-date" class="form-label">Date</label>
-                    <input type="date" id="expense-date" @bind="ExpenseDate"
-                           required
-                           class="form-control" />
-                </div>
-
-                <div class="mb-3">
-                    <label for="expense-tags" class="form-label">Tags (Comma Separated)</label>
-                    <input type="text" id="expense-tags" @bind="ExpenseTags"
-                           class="form-control" placeholder="e.g., Rent, Utilities" />
-                </div>
-
-                <div class="mb-3">
-                    <label for="expense-note" class="form-label">Note</label>
-                    <textarea id="expense-note" @bind="ExpenseNote" class="form-control" rows="3"
-                              placeholder="Optional notes about the expense"></textarea>
-                </div>
-
-                @if (ShowInsufficientBalanceAlert)
-                {
-                    <div class="alert alert-danger mt-3" role="alert">
-                        Insufficient balance for this expense.
+        <div class="card mx-auto">
+            <div class="card-body">
+                <form @onsubmit="AddExpenseHandler">
+                    <div class="mb-3">
+                        <label for="item" class="form-label">Item</label>
+                        <input type="text" id="item" placeholder="Enter item" @bind="ExpenseItem"
+                               required
+                               class="form-control" />
                     </div>
-                }
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-primary">Add Expense</button>
-                </div>
-            </form>
+                    <div class="mb-3">
+                        <label for="expense-amount" class="form-label">Amount</label>
+                        <input type="number" id="expense-amount" @bind="ExpenseCost"
+                               required
+                               class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="expense-date" class="form-label">Date</label>
+                        <input type="date" id="expense-date" @bind="ExpenseDate"
+                               required
+                               class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="expense-tags" class="form-label">Tags (Comma Separated)</label>
+                        <input type="text" id="expense-tags" @bind="ExpenseTags"
+                               class="form-control" placeholder="e.g., Rent, Utilities" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="expense-note" class="form-label">Note</label>
+                        <textarea id="expense-note" @bind="ExpenseNote" class="form-control" rows="3"
+                                  placeholder="Optional notes about the expense"></textarea>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Add Expense</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 </div>
 @code {
     private DateTime? ExpenseDate { get; set; }
@@ -67,38 +60,21 @@
     private decimal? ExpenseCost { get; set; }
     private string ExpenseTags { get; set; } = string.Empty;
     private string ExpenseNote { get; set; } = string.Empty;
-    private bool ShowInsufficientBalanceAlert { get; set; } = false;
 
     [Inject]
     private NavigationManager NavManager { get; set; } = default!;
 
-    private decimal CurrentBalance { get; set; } = 1000.00m;  // Example balance
-
     private void AddExpenseHandler()
     {
-        ShowInsufficientBalanceAlert = false;
-
         if (ExpenseDate != null && !string.IsNullOrEmpty(ExpenseItem) && ExpenseCost != null)
         {
-            if (IsSufficientBalance(ExpenseCost.Value))
-            {
-                var tagsList = string.IsNullOrWhiteSpace(ExpenseTags)
-                    ? new List<string>()
-                    : ExpenseTags.Split(',').Select(tag => tag.Trim()).ToList();
+            var tagsList = string.IsNullOrWhiteSpace(ExpenseTags)
+                ? new List<string>()
+                : ExpenseTags.Split(',').Select(tag => tag.Trim()).ToList();
 
-                SaveExpenseData(tagsList);
-                NavManager.NavigateTo("/home");
-            }
-            else
-            {
-                ShowInsufficientBalanceAlert = true;
-            }
+            SaveExpenseData(tagsList);
+            NavManager.NavigateTo("/home");
         }
-    }
-
-    private bool IsSufficientBalance(decimal expenseCost)
-    {
-        return expenseCost <= CurrentBalance;
     }
 
     private void SaveExpenseData(List<string> tags)
@@ -130,9 +106,6 @@
 
             // Save to file
             File.WriteAllText(filePath, jsonData);
-
-            // Deduct expense from balance
-            CurrentBalance -= expense.ExpenseCost;
         }
         catch (Exception ex)
         {
