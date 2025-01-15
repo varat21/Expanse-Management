@@ -8,7 +8,14 @@
     <div class="w-75 mb-4">
         <h1 class="text-center">Add Income</h1>
     </div>
+        
 
+        @if (IsSuccessAlertVisible)
+        {
+            <div class="alert alert-success" role="alert">
+               Income added successfully!
+            </div>
+        }
     <div>
         <div>
             <form @onsubmit="HandleSubmit">
@@ -71,6 +78,8 @@
     private string IncomeTags { get; set; } = string.Empty; 
     private string IncomeNote { get; set; } = string.Empty; 
     private List<Income> Incomes { get; set; } = new();
+    private bool IsSuccessAlertVisible { get; set; } = false;
+
 
     [Inject]
     private NavigationManager NavManager { get; set; } = default!;
@@ -100,8 +109,7 @@
                 });
 
             SaveIncomeData(); // Save updated list to file
-            NavManager.NavigateTo("/home");
-
+            IsSuccessAlertVisible = true;
             // Reset form fields
             IncomeTitle = string.Empty;
             IncomeAmount = 0;

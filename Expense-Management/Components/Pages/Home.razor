@@ -10,7 +10,7 @@
         <!-- Summary Cards -->
         <div class="row mb-4 text-center">
             <div class="col-md-3">
-                <div class="card shadow">
+                <div class="card shadow" style="background-color: #f0f8ff;">
                     <div class="card-body">
                         <h5 class="card-title text-muted">Total Number Transactions</h5>
                         <p class="h4 font-weight-bold">@TotalTransactions</p>
@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow">
+                <div class="card shadow" style="background-color: #d4edda;">
                     <div class="card-body">
                         <h5 class="card-title text-muted">Cash Inflow</h5>
                         <p class="h4 font-weight-bold">@CashInflow.ToString("C")</p>
@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow">
+                <div class="card shadow" style="background-color: #f8d7da;">
                     <div class="card-body">
                         <h5 class="card-title text-muted">Cash Outflow</h5>
                         <p class="h4 font-weight-bold">@CashOutflow.ToString("C")</p>
@@ -34,7 +34,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow">
+                <div class="card shadow" style="background-color: #fff3cd;">
                     <div class="card-body">
                         <h5 class="card-title text-muted">Debt</h5>
                         <p class="h4 font-weight-bold">@TotalDebt.ToString("C")</p>
@@ -47,14 +47,14 @@
         @if (IsError)
         {
             <div class="alert alert-danger" role="alert">
-                Cash Outflow exceeds Total Amount Transactions. Please check your data.
+                Cash Outflow exceeds Total Amount Transactions. Please check your balance.
             </div>
         }
 
         <!-- Highest/Lowest Transactions -->
         <div class="row mb-4 text-center">
             <div class="col-6 col-sm-3">
-                <div class="card shadow" style="font-size: 0.9rem;">
+                <div class="card shadow" style="font-size: 0.9rem; background-color: #f0f8ff;">
                     <div class="card-body p-2">
                         <h6 class="card-title text-muted">Total transactions </h6>
                         <p class="h6 font-weight-bold">@TotalAmountTransactions</p>
@@ -62,7 +62,7 @@
                 </div>
             </div>
             <div class="col-6 col-sm-3">
-                <div class="card shadow" style="font-size: 0.9rem;">
+                <div class="card shadow" style="font-size: 0.9rem; background-color: #d4edda;">
                     <div class="card-body p-2">
                         <h6 class="card-title text-muted">Highest Inflow</h6>
                         <p class="h6 font-weight-bold">@HighestInflow?.Title</p>
@@ -71,7 +71,7 @@
                 </div>
             </div>
             <div class="col-6 col-sm-3">
-                <div class="card shadow" style="font-size: 0.9rem;">
+                <div class="card shadow" style="font-size: 0.9rem; background-color: #f8d7da;">
                     <div class="card-body p-2">
                         <h6 class="card-title text-muted">Highest Outflow</h6>
                         <p class="h6 font-weight-bold">@HighestOutflow?.Title</p>
@@ -80,7 +80,7 @@
                 </div>
             </div>
             <div class="col-6 col-sm-3">
-                <div class="card shadow" style="font-size: 0.9rem;">
+                <div class="card shadow" style="font-size: 0.9rem; background-color: #fff3cd;">
                     <div class="card-body p-2">
                         <h6 class="card-title text-muted">Highest Debt</h6>
                         <p class="h6 font-weight-bold">@HighestDebt?.Title</p>
@@ -89,6 +89,7 @@
                 </div>
             </div>
         </div>
+
 
         <!-- Transaction Report -->
         <div class="card shadow">
@@ -161,16 +162,17 @@
                         <td>@string.Join(", ", transaction.Tags)</td>
                         <td>@transaction.Note</td>
                         <td>@transaction.Status</td>
-                        <td>
+                                        <td>
                                             @if (transaction.Status == "pending")
                                             {
-                                    <button class="btn btn-primary" @onclick="() => ClearDebt(transaction)">Clear Debt</button>
+                                                <button class="btn btn-primary" @onclick="() => ClearDebt(transaction)">Clear Debt</button>
                                             }
                                             @if (!string.IsNullOrEmpty(transaction.ErrorMessage))
                                             {
-                                    <div class="error-message">@transaction.ErrorMessage</div>
+                                                <div class="error-message">@transaction.ErrorMessage</div>
                                             }
-                        </td>
+                                        </td>
+
                     </tr>
                                 }
                             }
@@ -303,28 +305,13 @@
 
     private void CalculateSummary()
     {
-        // Calculate CashInflow, CashOutflow, and TotalDebt
-        CashInflow = Transactions
-            .Where(t => t.Type == "Income" || t.Type == "Debt")
-            .Sum(t => Math.Abs(t.Amount));
+        CashInflow = Transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+        CashOutflow = Transactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+        TotalDebt = Transactions.Where(t => t.Type == "Debt").Sum(t => t.Amount);
+        TotalAmountTransactions = CashInflow - TotalDebt;
 
-        CashOutflow = Transactions
-            .Where(t => t.Type == "Expense")
-            .Sum(t => t.Amount);
-
-        TotalDebt = Transactions
-            .Where(t => t.Type == "Debt" && t.Status == "pending")
-            .Sum(t => t.Amount);
-
-        // Calculate TotalAmountTransactions
-        TotalAmountTransactions = TotalDebt + CashInflow - CashOutflow;
-
-        // Ensure TotalAmountTransactions is not negative
-    //     if (TotalAmountTransactions < 0)
-    //     {
-    //         TotalAmountTransactions = 0;
-    //     }
-     }
+        IsError = CashOutflow > TotalAmountTransactions;
+    }
 
 
     private void ToggleTag(string tag)
@@ -398,8 +385,13 @@
             return;
         }
 
+        // Update transaction status and error message
         transaction.Status = "cleared";
-        transaction.ErrorMessage = string.Empty; // Clear any previous error
+        transaction.ErrorMessage = string.Empty;
+
+        // Deduct the amount from TotalAmountTransactions and TotalDebt
+        TotalAmountTransactions -= transaction.Amount;
+        TotalDebt -= transaction.Amount;
 
         try
         {
@@ -407,12 +399,14 @@
             var debtData = File.ReadAllText(debtFilePath);
             var debts = System.Text.Json.JsonSerializer.Deserialize<List<Debt>>(debtData) ?? new List<Debt>();
 
+            // Find the matching debt in the file and update its status
             var matchingDebt = debts.FirstOrDefault(d => d.DebtTitle == transaction.Title && d.DebtAmount == transaction.Amount && d.DebtDate == transaction.Date);
             if (matchingDebt != null)
             {
                 matchingDebt.Status = "cleared";
             }
 
+            // Save the updated debt data back to the file
             var updatedDebtData = System.Text.Json.JsonSerializer.Serialize(debts, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(debtFilePath, updatedDebtData);
         }
@@ -421,7 +415,8 @@
             transaction.ErrorMessage = $"Error updating debt status: {ex.Message}";
         }
 
-        StateHasChanged(); // Ensure UI refresh
+        StateHasChanged(); // Ensure the UI refreshes to reflect the changes
     }
+
 
 }
