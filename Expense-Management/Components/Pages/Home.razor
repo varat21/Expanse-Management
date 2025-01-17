@@ -305,7 +305,7 @@
 
     private void CalculateSummary()
     {
-        CashInflow = Transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+        CashInflow = Transactions.Where(t => t.Type == "Income" || t.Type == "Debt").Sum(t => Math.Abs(t.Amount));
         CashOutflow = Transactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
         TotalDebt = Transactions.Where(t => t.Type == "Debt").Sum(t => t.Amount);
         TotalAmountTransactions = CashInflow - TotalDebt;
@@ -313,6 +313,22 @@
         IsError = CashOutflow > TotalAmountTransactions;
     }
 
+    private void AttemptTransaction(Transaction transaction)
+    {
+        if (transaction.Amount > TotalAmountTransactions)
+        {
+            ErrorMessage = $"Insufficient funds to complete transaction: {transaction.Title} for {transaction.Amount:C}";
+            IsError = true;
+            StateHasChanged();
+        }
+        else
+        {
+            // Process the transaction
+            TotalAmountTransactions -= transaction.Amount;
+            CalculateSummary();
+            IsError = false;
+        }
+    }
 
     private void ToggleTag(string tag)
     {

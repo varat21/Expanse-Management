@@ -9,6 +9,12 @@
     <div class="mb-4">
         <h1 class="text-center">Add Debt</h1>
     </div>
+        @if (IsSuccessAlertVisible)
+        {
+            <div class="alert alert-success" role="alert">
+                Debt  added successfully!
+            </div>
+        }
 
     <div class="card mx-auto ">
         <div class="card-body">
@@ -66,6 +72,8 @@
     private string DebtTags { get; set; } = string.Empty;  
     private string DebtNote { get; set; } = string.Empty;
     private string Status { get; set; } = "pending";
+    private bool IsSuccessAlertVisible { get; set; } = false;
+
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -79,8 +87,10 @@
                 : DebtTags.Split(',').Select(tag => tag.Trim()).ToList();
 
             SaveDebtData(tagsList); 
+            IsSuccessAlertVisible = true;
 
-            NavigationManager.NavigateTo("/home");
+
+            // NavigationManager.NavigateTo("/home");
 
             DebtTitle = string.Empty;
             DebtAmount = 0;
