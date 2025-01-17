@@ -1,60 +1,74 @@
 ﻿@page "/addExpense"
-
-<div class="container-fluid py-4 shadow-lg min-width-99">
-    <div class="mb-5">
-        <h1 class="text-center">Add Expense</h1>
+@using Expense_Management.Components.Layout
+<div class="page d-flex bg-white">
+    <div class="sidebar bg-white text-dark">
+        <NavMenu /> 
     </div>
+    <div class="container-fluid py-4 shadow-lg min-width-99">
+        <div class="mb-5">
+            <h1 class="text-center">Add Expense</h1>
+        </div>
 
-    <div class="card mx-auto">
-        <div class="card-body">
-            <form @onsubmit="AddExpenseHandler">
-                <div class="mb-3">
-                    <label for="item" class="form-label">Item</label>
-                    <input type="text" id="item" placeholder="Enter item" @bind="ExpenseItem"
-                           required
-                           class="form-control" />
-                </div>
+        @if (IsSuccessAlertVisible)
+        {
+            <div class="alert alert-success" role="alert">
+                Expense added successfully!
+            </div>
+        }
 
-                <div class="mb-3">
-                    <label for="expense-amount" class="form-label">Amount</label>
-                    <input type="number" id="expense-amount" @bind="ExpenseCost"
-                           required
-                           class="form-control" />
-                </div>
+        <div class="card mx-auto">
+            <div class="card-body">
+                <form @onsubmit="AddExpenseHandler">
+                    <div class="mb-3">
+                        <label for="item" class="form-label">Item</label>
+                        <input type="text" id="item" placeholder="Enter item" @bind="ExpenseItem"
+                               required
+                               class="form-control" />
+                    </div>
 
-                <div class="mb-3">
-                    <label for="expense-date" class="form-label">Date</label>
-                    <input type="date" id="expense-date" @bind="ExpenseDate"
-                           required
-                           class="form-control" />
-                </div>
+                    <div class="mb-3">
+                        <label for="expense-amount" class="form-label">Amount</label>
+                        <input type="number" id="expense-amount" @bind="ExpenseCost"
+                               required
+                               class="form-control" />
+                    </div>
 
-                <div class="mb-3">
-                    <label for="expense-tags" class="form-label">Tags (Comma Separated)</label>
-                    <input type="text" id="expense-tags" @bind="ExpenseTags"
-                           class="form-control" placeholder="e.g., Rent, Utilities" />
-                </div>
+                    <div class="mb-3">
+                        <label for="expense-date" class="form-label">Date</label>
+                        <input type="date" id="expense-date" @bind="ExpenseDate"
+                               required
+                               class="form-control" />
+                    </div>
 
-                <div class="mb-3">
-                    <label for="expense-note" class="form-label">Note</label>
-                    <textarea id="expense-note" @bind="ExpenseNote" class="form-control" rows="3"
-                              placeholder="Optional notes about the expense"></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label for="expense-tags" class="form-label">Tags (Comma Separated)</label>
+                        <input type="text" id="expense-tags" @bind="ExpenseTags"
+                               class="form-control" placeholder="e.g., Rent, Utilities" />
+                    </div>
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-primary">Add Expense</button>
-                </div>
-            </form>
+                    <div class="mb-3">
+                        <label for="expense-note" class="form-label">Note</label>
+                        <textarea id="expense-note" @bind="ExpenseNote" class="form-control" rows="3"
+                                  placeholder="Optional notes about the expense"></textarea>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Add Expense</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
+</div>
 @code {
     private DateTime? ExpenseDate { get; set; }
     private string? ExpenseItem { get; set; }
     private decimal? ExpenseCost { get; set; }
-    private string ExpenseTags { get; set; } = string.Empty;  
-    private string ExpenseNote { get; set; } = string.Empty;  
+    private string ExpenseTags { get; set; } = string.Empty;
+    private string ExpenseNote { get; set; } = string.Empty;
+
+    private bool IsSuccessAlertVisible { get; set; } = false;
 
     [Inject]
     private NavigationManager NavManager { get; set; } = default!;
@@ -67,8 +81,17 @@
                 ? new List<string>()
                 : ExpenseTags.Split(',').Select(tag => tag.Trim()).ToList();
 
-            SaveExpenseData(tagsList);  
-            NavManager.NavigateTo("/home");
+            SaveExpenseData(tagsList);
+            IsSuccessAlertVisible = true;
+
+            // Clear the form fields
+            ExpenseDate = null;
+            ExpenseItem = string.Empty;
+            ExpenseCost = null;
+            ExpenseTags = string.Empty;
+            ExpenseNote = string.Empty;
+
+            StateHasChanged(); // Update UI
         }
     }
 
@@ -81,8 +104,8 @@
                     ExpenseDate = ExpenseDate.Value,
                     ExpenseItem = ExpenseItem!,
                     ExpenseCost = ExpenseCost.Value,
-                    Tags = tags,  
-                    Note = ExpenseNote  
+                    Tags = tags,
+                    Note = ExpenseNote
                 };
 
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Expense.json");
@@ -96,10 +119,10 @@
 
             expenses.Add(expense);
 
-            // seralize updated data
+            // Serialize updated data
             string jsonData = System.Text.Json.JsonSerializer.Serialize(expenses, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
 
-            // save to file
+            // Save to file
             File.WriteAllText(filePath, jsonData);
         }
         catch (Exception ex)
@@ -113,7 +136,7 @@
         public DateTime ExpenseDate { get; set; }
         public string ExpenseItem { get; set; } = string.Empty;
         public decimal ExpenseCost { get; set; }
-        public List<string> Tags { get; set; } = new();  
-        public string Note { get; set; } = string.Empty;  
+        public List<string> Tags { get; set; } = new();
+        public string Note { get; set; } = string.Empty;
     }
 }

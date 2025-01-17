@@ -1,6 +1,6 @@
 ﻿@page "/register"
 
-<div class="d-flex min-vh-100 align-items-center justify-content-center bg-danger">
+<div class="d-flex min-vh-100 align-items-center justify-content-center">
     <div class="card p-4 shadow-lg" style="width: 25rem;">
         <h1 class="h3 font-weight-bold mb-4 text-center">Register</h1>
 
@@ -16,15 +16,16 @@
             <div class="mb-3">
                 <label class="form-label" for="fullname">Full Name:</label>
                 <div class="input-group">
-                    <span class="input-group-text">
-                        <i class="fa-regular fa-user"></i>
-                    </span>
+                    
                     <input id="fullname"
                            required
                            type="text"
                            @bind="FullName"
                            placeholder="Enter your full name"
                            class="form-control" />
+                    <span class="input-group-text">
+                        <i class="fa-regular fa-user"></i>
+                    </span>
                 </div>
             </div>
 
@@ -45,15 +46,16 @@
             <div class="mb-3">
                 <label class="form-label" for="password">Password:</label>
                 <div class="input-group">
-                    <span class="input-group-text">
-                        <i class="fa-regular fa-eye"></i>
-                    </span>
+                   
                     <input id="password"
                            required
                            type="password"
                            @bind="Password"
                            placeholder="Enter Password"
                            class="form-control" />
+                    <span class="input-group-text">
+                        <i class="fa-regular fa-eye"></i>
+                    </span>
                 </div>
             </div>
 
