@@ -195,12 +195,17 @@
 @code {
     private List<Transaction> Transactions { get; set; } = new();
         public string ErrorMessage { get; set; }
-
     private List<Transaction> FilteredTransactions => Transactions
+    // If SearchText is not empty, filters transactions where the Title contains SearchText, ignoring case.
+
         .Where(t => string.IsNullOrWhiteSpace(SearchText) || t.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+       // If SelectedType is not empty, filters transactions that match the selected type.
         .Where(t => string.IsNullOrWhiteSpace(SelectedType) || t.Type == SelectedType)
+      // If StartDate is specified, includes transactions with Date greater than or equal to StartDate.
         .Where(t => !StartDate.HasValue || t.Date >= StartDate.Value)
+       // If EndDate is specified, includes transactions with Date less than or equal to EndDate.
         .Where(t => !EndDate.HasValue || t.Date <= EndDate.Value)
+       // If the Tags list is empty, it includes all transactions.
         .Where(t => !Tags.Any() || t.Tags.Intersect(Tags).Any())
         .OrderBy(t => SortAscending ? t.Date : (DateTime?)null)
         .ThenByDescending(t => !SortAscending ? t.Date : (DateTime?)null)
@@ -308,7 +313,7 @@
         CashInflow = Transactions.Where(t => t.Type == "Income" || t.Type == "Debt").Sum(t => Math.Abs(t.Amount));
         CashOutflow = Transactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
         TotalDebt = Transactions.Where(t => t.Type == "Debt").Sum(t => t.Amount);
-        TotalAmountTransactions = CashInflow - TotalDebt;
+        TotalAmountTransactions = CashInflow - TotalDebt - CashOutflow;
 
         IsError = CashOutflow > TotalAmountTransactions;
     }
@@ -431,7 +436,7 @@
             transaction.ErrorMessage = $"Error updating debt status: {ex.Message}";
         }
 
-        StateHasChanged(); // Ensure the UI refreshes to reflect the changes
+        StateHasChanged(); 
     }
 
 

@@ -8,9 +8,7 @@
     <div class="w-75 mb-4">
         <h1 class="text-center">Add Income</h1>
     </div>
-        
-
-        @if (IsSuccessAlertVisible)
+        @if (IsSuccessAlertVisible) 
         {
             <div class="alert alert-success" role="alert">
                Income added successfully!
@@ -77,7 +75,7 @@
     private DateTime IncomeDate { get; set; } = DateTime.Today;
     private string IncomeTags { get; set; } = string.Empty; 
     private string IncomeNote { get; set; } = string.Empty; 
-    private List<Income> Incomes { get; set; } = new();
+    private List<Income> Incomes { get; set; } = new(); 
     private bool IsSuccessAlertVisible { get; set; } = false;
 
 
@@ -86,7 +84,7 @@
 
     protected override void OnInitialized()
     {
-        LoadIncomeData(); // load existing data on initialization
+        LoadIncomeData(); // Load Existing Data On Initialization
     }
 
     private void HandleSubmit()
